@@ -1,3 +1,4 @@
+import {Box, Button } from '@mui/material';
 import React, { useRef, useState, useEffect } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
 
@@ -35,6 +36,31 @@ const CanvasBackground = () => {
     }
   };
 
+  const generateImage = async() => {
+    console.log(sigCanvasRef)
+        const canvas = sigCanvasRef.current.getCanvas();
+        if (canvas) {
+            const imageURL = canvas.toDataURL('image/png');
+            const response = await fetch(imageURL);
+            const blob = await response.blob();
+            // Create a temporary URL to the blob
+            const url = window.URL.createObjectURL(blob);
+            // Create a link element
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = "test" ; // Specify the download filename
+            document.body.appendChild(link);
+      
+            // Trigger the download
+            link.click();
+            // Cleanup
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+          }
+
+          
+  }
+
   const clearCanvas = () => {
     if (sigCanvasRef.current) {
       sigCanvasRef.current.clear();
@@ -42,16 +68,19 @@ const CanvasBackground = () => {
   };
 
   return (
-    <div>
-      <input type="file" onChange={handleImageUpload} />
-      <button onClick={clearCanvas}>Clear Canvas</button>
-      <br />
+    <Box>
       <SignatureCanvas
         ref={sigCanvasRef}
-        canvasProps={{ width: 400, height: 200, style: { border: '1px solid black' } }}
+        canvasProps={{ width: 800 , height: 650, style: { border: '2px solid black', marginTop: 20 } }}
         backgroundColor="rgba(0, 0, 0, 0)" // Set canvas background color to transparent using rgba
       />
-    </div>
+      <br />
+      <Button variant="contained" className='buttons' >
+        <input type="file" accept="image/*" onChange={handleImageUpload} /> Select File
+      </Button>
+      <Button variant="contained" onClick={clearCanvas}  className='buttons' >Clear Canvas</Button>
+      <Button onClick={generateImage} variant='contained' className='buttons' >Download</Button>
+    </Box>
   );
 };
 
